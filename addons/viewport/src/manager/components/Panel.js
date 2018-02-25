@@ -3,10 +3,15 @@ import PropTypes from 'prop-types';
 import { baseFonts } from '@storybook/components';
 import { document } from 'global';
 
-import { initialViewports, defaultViewport, resetViewport } from './viewportInfo';
+import { resetViewport, viewportsTransformer } from './viewportInfo';
 import { SelectViewport } from './SelectViewport';
 import { RotateViewport } from './RotateViewport';
-import { UPDATE_VIEWPORT_EVENT_ID } from '../../shared';
+import {
+  CONFIGURE_VIEWPORT_EVENT_ID,
+  UPDATE_VIEWPORT_EVENT_ID,
+  INITIAL_VIEWPORTS,
+  DEFAULT_VIEWPORT,
+} from '../../shared';
 
 import * as styles from './styles';
 
@@ -26,8 +31,9 @@ export class Panel extends Component {
   constructor(props, context) {
     super(props, context);
     this.state = {
-      viewport: defaultViewport,
-      viewports: initialViewports,
+      viewport: DEFAULT_VIEWPORT,
+      defaultViewport: DEFAULT_VIEWPORT,
+      viewports: viewportsTransformer(INITIAL_VIEWPORTS),
       isLandscape: false,
     };
 
@@ -35,12 +41,26 @@ export class Panel extends Component {
   }
 
   componentDidMount() {
+    const { channel } = this.props;
+
     this.iframe = document.getElementById(storybookIframe);
+
+    channel.on(CONFIGURE_VIEWPORT_EVENT_ID, this.configure);
   }
 
   componentWillUnmount() {
-    this.props.channel.removeListener(UPDATE_VIEWPORT_EVENT_ID, this.changeViewport);
+    const { channel } = this.props;
+
+    channel.removeListener(UPDATE_VIEWPORT_EVENT_ID, this.changeViewport);
+    channel.removeListener(CONFIGURE_VIEWPORT_EVENT_ID, this.configure);
   }
+
+  configure = ({ viewports = INITIAL_VIEWPORTS, defaultViewport = DEFAULT_VIEWPORT }) => {
+    this.setState({
+      defaultViewport,
+      viewports: viewportsTransformer(viewports),
+    });
+  };
 
   iframe = undefined;
 
@@ -83,7 +103,7 @@ export class Panel extends Component {
   };
 
   render() {
-    const { isLandscape, viewport, viewports } = this.state;
+    const { isLandscape, defaultViewport, viewport, viewports } = this.state;
 
     const disableDefault = viewport === defaultViewport;
     const disabledStyles = disableDefault ? styles.disabled : {};
