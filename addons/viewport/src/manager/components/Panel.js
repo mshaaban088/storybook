@@ -36,8 +36,6 @@ export class Panel extends Component {
       viewports: viewportsTransformer(INITIAL_VIEWPORTS),
       isLandscape: false,
     };
-
-    this.props.channel.on(UPDATE_VIEWPORT_EVENT_ID, this.changeViewport);
   }
 
   componentDidMount() {
@@ -45,6 +43,7 @@ export class Panel extends Component {
 
     this.iframe = document.getElementById(storybookIframe);
 
+    channel.on(UPDATE_VIEWPORT_EVENT_ID, this.changeViewport);
     channel.on(CONFIGURE_VIEWPORT_EVENT_ID, this.configure);
   }
 
