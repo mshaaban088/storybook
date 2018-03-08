@@ -63,6 +63,20 @@ describe('Viewport/Panel', () => {
         subject.instance().changeViewport
       );
     });
+
+    it('listens on `setStoryDefaultViewport` channel', () => {
+      expect(props.channel.on).toHaveBeenCalledWith(
+        'addon:viewport:setStoryDefaultViewport',
+        subject.instance().setStoryDefaultViewport
+      );
+    });
+
+    it('listens on `unsetStoryDefaultViewport` channel', () => {
+      expect(props.channel.on).toHaveBeenCalledWith(
+        'addon:viewport:unsetStoryDefaultViewport',
+        subject.instance().unsetStoryDefaultViewport
+      );
+    });
   });
 
   describe('componentWillUnmount', () => {
@@ -83,6 +97,20 @@ describe('Viewport/Panel', () => {
         subject.instance().configure
       );
     });
+
+    it('removes `setStoryDefaultViewport` channel listener', () => {
+      expect(props.channel.removeListener).toHaveBeenCalledWith(
+        'addon:viewport:setStoryDefaultViewport',
+        subject.instance().setStoryDefaultViewport
+      );
+    });
+
+    it('removes `unsetStoryDefaultViewport` channel listener', () => {
+      expect(props.channel.removeListener).toHaveBeenCalledWith(
+        'addon:viewport:unsetStoryDefaultViewport',
+        subject.instance().unsetStoryDefaultViewport
+      );
+    });
   });
 
   describe('configure', () => {
@@ -93,44 +121,42 @@ describe('Viewport/Panel', () => {
         viewports: {
           foo: {
             styles: {
-              width: '50px'
-            }
+              width: '50px',
+            },
           },
           bar: {
             styles: {
-              width: '100px'
-            }
-          }
-        }
+              width: '100px',
+            },
+          },
+        },
       });
     });
 
     it('sets the state with the new information', () => {
-      expect(subject.instance().setState).toHaveBeenCalledWith(
-        {
-          defaultViewport: 'iphone6',
-          viewports: {
-            foo: {
-              styles: {
-                width: '50px',
-                border: '1px solid #728099',
-                display: 'flex',
-                margin: '0 auto',
-                boxShadow: 'rgba(0,0,0,0.2) 0px 0px 60px 12px'
-              }
+      expect(subject.instance().setState).toHaveBeenCalledWith({
+        defaultViewport: 'iphone6',
+        viewports: {
+          foo: {
+            styles: {
+              width: '50px',
+              border: '1px solid #728099',
+              display: 'flex',
+              margin: '0 auto',
+              boxShadow: 'rgba(0,0,0,0.2) 0px 0px 60px 12px',
             },
-            bar: {
-              styles: {
-                width: '100px',
-                border: '1px solid #728099',
-                display: 'flex',
-                margin: '0 auto',
-                boxShadow: 'rgba(0,0,0,0.2) 0px 0px 60px 12px'
-              }
-            }
-          }
-        }
-      );
+          },
+          bar: {
+            styles: {
+              width: '100px',
+              border: '1px solid #728099',
+              display: 'flex',
+              margin: '0 auto',
+              boxShadow: 'rgba(0,0,0,0.2) 0px 0px 60px 12px',
+            },
+          },
+        },
+      });
     });
   });
 
@@ -164,6 +190,42 @@ describe('Viewport/Panel', () => {
       it('doesnt update the state', () => {
         expect(subject.instance().setState).not.toHaveBeenCalled();
       });
+    });
+  });
+
+  describe('setStoryDefaultViewport', () => {
+    beforeEach(() => {
+      subject.instance().setState = jest.fn();
+      subject.instance().updateIframe = jest.fn();
+      subject.instance().setStoryDefaultViewport(INITIAL_VIEWPORTS[1]);
+    });
+
+    it('sets the state with the new information', () => {
+      expect(subject.instance().setState).toHaveBeenCalledWith(
+        {
+          viewport: INITIAL_VIEWPORTS[1],
+          storyDefaultViewport: INITIAL_VIEWPORTS[1],
+        },
+        subject.instance().updateIframe
+      );
+    });
+  });
+
+  describe('unsetStoryDefaultViewport', () => {
+    beforeEach(() => {
+      subject.instance().setState = jest.fn();
+      subject.instance().updateIframe = jest.fn();
+      subject.instance().unsetStoryDefaultViewport();
+    });
+
+    it('resets the state', () => {
+      expect(subject.instance().setState).toHaveBeenCalledWith(
+        {
+          viewport: DEFAULT_VIEWPORT,
+          storyDefaultViewport: undefined,
+        },
+        subject.instance().updateIframe
+      );
     });
   });
 
